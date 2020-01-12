@@ -8,7 +8,6 @@ fn main() {
     .version("0.0.1")
     .about("JSON logs reader for JSON logs")
 
-
     .arg(Arg::with_name("filters")
       .short("f")
       .long("filter")
