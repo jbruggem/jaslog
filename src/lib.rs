@@ -1,10 +1,11 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
+extern crate serde;
 
+// Used for tests
 #[macro_use]
 extern crate serde_json;
-extern crate serde;
 
 use serde_json::Value;
 use std::fs::File;
@@ -14,6 +15,7 @@ use std::io::{BufRead, BufReader};
 
 pub mod filter;
 pub mod format;
+pub mod line_formats;
 
 use filter::*;
 use format::*;
