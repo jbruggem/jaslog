@@ -13,7 +13,6 @@ It will work especially well with certain specific JSON structures (see "Support
 ## Usage
 
 ```bash
-jason 0.0.1
 JSON logs reader for JSON logs
 
 USAGE:
