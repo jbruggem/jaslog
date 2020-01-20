@@ -18,6 +18,7 @@ pub fn passes_filters(filters: &Vec<Filter>, entry: &Value) -> bool {
 pub enum FilterKind {
   Equals,
   Contains,
+  NotContains,
 }
 
 #[derive(Debug)]
@@ -37,7 +38,8 @@ impl Filter {
       let value = possible_value.unwrap().as_str().unwrap();
       match self.kind {
         FilterKind::Equals => value == self.value,
-        FilterKind::Contains => value.contains(self.value.as_str())
+        FilterKind::Contains => value.contains(self.value.as_str()),
+        FilterKind::NotContains => !value.contains(self.value.as_str())
       }
     }
   }
@@ -57,16 +59,27 @@ impl Filter {
       value: value.to_string(),
     }
   }
+  fn not_contains(key: &str, value: &str) -> Self {
+    Filter {
+      kind: FilterKind::NotContains,
+      key: key.to_string(),
+      value: value.to_string(),
+    }
+  }
 
   fn from(text: &str) -> Filter {
     lazy_static! {
-        static ref CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\+([^=]+)$").unwrap();
-        static ref EQUALS_REGEX: Regex = Regex::new(r"^([^=]+)=([^=]+)").unwrap();
+        static ref CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\+(.+)$").unwrap();
+        static ref NOT_CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\^(.+)$").unwrap();
+        static ref EQUALS_REGEX: Regex = Regex::new(r"^([^=]+)=(.+)").unwrap();
     }
 
     if CONTAINS_REGEX.is_match(text) {
       let caps = CONTAINS_REGEX.captures(text).unwrap();
       Filter::contains(caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str())
+    } else if NOT_CONTAINS_REGEX.is_match(text) {
+      let caps = NOT_CONTAINS_REGEX.captures(text).unwrap();
+      Filter::not_contains(caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str())
     } else if EQUALS_REGEX.is_match(text) {
       let caps = EQUALS_REGEX.captures(text).unwrap();
       Filter::equals(caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str())
@@ -98,13 +111,22 @@ mod tests {
   }
 
   #[test]
+  fn test_parse_filter_not_contains() {
+    assert_eq!(
+      Filter::from("the_key=^search=for"),
+      Filter::not_contains("the_key", "search=for"),
+    );
+  }
+
+  #[test]
   fn test_parse_filter_list() {
     assert_eq!(
-      parse_filters(vec!["the_key=+search_for", "this=that", "module=+Drive"]),
+      parse_filters(vec!["the_key=+search_for", "this=that", "module=+Drive", "thing=^ploup"]),
       vec![
         Filter::contains("the_key", "search_for"),
         Filter::equals("this", "that"),
-        Filter::contains("module", "Drive")
+        Filter::contains("module", "Drive"),
+        Filter::not_contains("thing", "ploup")
       ]
     );
   }
@@ -120,6 +142,11 @@ mod tests {
   fn filter_contains_passes() {
     assert!(!Filter::contains("app", "de").passes(&build_line()));
     assert!(Filter::contains("app", "riv").passes(&build_line()));
+  }
+  #[test]
+  fn filter_not_contains_passes() {
+    assert!(Filter::not_contains("app", "de").passes(&build_line()));
+    assert!(!Filter::not_contains("app", "riv").passes(&build_line()));
   }
 
   #[test]
@@ -151,6 +178,12 @@ mod tests {
     assert!(
       !passes_filters(
         &parse_filters(vec!["app=operate", "module=+Flink"]),
+        &build_line(),
+      )
+    );
+    assert!(
+      !passes_filters(
+        &parse_filters(vec!["app=drive", "module=^Flink"]),
         &build_line(),
       )
     );

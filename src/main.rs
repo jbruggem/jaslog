@@ -4,14 +4,14 @@ use clap::{Arg, App};
 use jaslog::read_log;
 
 fn main() {
-  let options = App::new("jason")
-    .version("0.1.1")
+  let options = App::new("jaslog")
+    .version("0.1.2")
     .about("JSON logs reader for JSON logs")
 
     .arg(Arg::with_name("filters")
       .short("f")
       .long("filter")
-      .help("Filter the logs. Example:  -f app=this -f module=+Drive (use '+' to search within the field)")
+      .help("Filter the logs. Example:  -f app=this -f module=+Drive (use '+' to search within the field, use '^' to exclude within the field)")
       .takes_value(true)
       .multiple(true))
 
