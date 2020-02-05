@@ -4,8 +4,10 @@ use clap::{Arg, App};
 use jaslog::read_log;
 
 fn main() {
+  const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
   let options = App::new("jaslog")
-    .version("0.1.3")
+    .version(VERSION)
     .about("JSON logs reader for JSON logs")
 
     .arg(Arg::with_name("filters")

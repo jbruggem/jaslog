@@ -1,5 +1,7 @@
 # Jaslog
 
+![Rust](https://github.com/jbruggem/jaslog/workflows/Rust/badge.svg)
+
 A log reader for structured logs that can filter based on the properties.
 
 - non-json lines will be displayed but marked clearly
@@ -12,26 +14,38 @@ It will work especially well with certain specific JSON structures (see "Support
 
 ## Usage
 
-```bash
-JSON logs reader for JSON logs
+Basic usage:
 
-USAGE:
-    jaslog [OPTIONS] <input_file>
+```sh
+$ jaslog file.json.log
+```
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+Or using stdin:
 
-OPTIONS:
-    -f, --filter <filters>...        Filter the logs. Example:  -f app=this -f module=+Drive (use '+' to search within
-                                     the field)
-    -n, --lines <number_of_lines>    Number of lines to read.
+```sh
+$ cat file.json.log | jaslog
+```
 
-ARGS:
-    <input_file>    Input file to read
+You can filter. Syntax is:
+
+* `<field>=<value>`: search for exact value of field
+* `<field>=+<value>`: search for value in field (suggestions of a better syntax are welcome :-P)
+* `<field>=^<value>`: search for **absence** of value in field (suggestions of a better syntax are welcome :-P)
+
+```sh
+$ jaslog -f level=info file.json.log
+```
+
+You can also can also ask to read only the first n lines:
+
+
+```sh
+$ jaslog -f level=info -n 50 file.json.log
 ```
 
 ## Explicitly supported formats
+
+Pull requests to support new formats are welcome of course !
 
 Elixir logs:
 
