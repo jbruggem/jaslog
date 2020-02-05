@@ -5,7 +5,7 @@ use jaslog::read_log;
 
 fn main() {
   let options = App::new("jaslog")
-    .version("0.1.2")
+    .version("0.1.3")
     .about("JSON logs reader for JSON logs")
 
     .arg(Arg::with_name("filters")

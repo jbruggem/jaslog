@@ -1,6 +1,6 @@
 [package]
 name = "jaslog"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Jehan Bruggeman <jehan.bruggeman@euranova.eu>"]
 edition = "2018"
 
