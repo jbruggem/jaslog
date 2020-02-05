@@ -1,6 +1,11 @@
-name: Build and test
+name: Test
 
-on: [push]
+on:
+  push:
+    branches:
+      - "*"
+    tags-ignore:
+      - "v*"
 
 jobs:
   build:
@@ -12,12 +17,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Cache build
-      id: build-cache
+    - name: Cache build and tests
+      id: build-and-test-cache
       uses: actions/cache@v1
       with:
         path: target
-        key: ${{ matrix.os }}-build-cache
+        key: ${{ matrix.os }}-build-and-test-cache
 
     - name: Run tests
       run: cargo test
@@ -45,18 +50,3 @@ jobs:
       with:
         name: jaslog_windows.exe
         path: target/release/jaslog.exe
-
-  release:
-    if: github.ref == 'v*'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
-          prerelease: false
