@@ -79,3 +79,9 @@ Logstash's jsonevent-layout logs:
     "mdc": {}
     }
 ```
+
+### Releasing
+
+* Update version in Cargo.toml
+* Commit
+* tag with `v<version>`, then push

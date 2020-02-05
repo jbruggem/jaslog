@@ -25,21 +25,21 @@ jobs:
     - name: Build
       run: cargo build --release
 
-    - name: persist binary
+    - name: Persist binary Linux
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v1
       with:
         name: jaslog_linux
         path: target/release/jaslog
 
-    - name: persist binary
+    - name: Persist binary macOS
       if: matrix.os == 'macOS-latest'
       uses: actions/upload-artifact@v1
       with:
         name: jaslog_macos
         path: target/release/jaslog
 
-    - name: persist binary
+    - name: Persist binary Windows
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v1
       with:
