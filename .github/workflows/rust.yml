@@ -1,4 +1,4 @@
-name: Rust
+name: Build and test
 
 on: [push]
 
@@ -7,19 +7,56 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
-      
-    - name: Build
-      run: cargo build --verbose
-      
+
+    - name: Cache build
+      id: build-cache
+      uses: actions/cache@v1
+      with:
+        path: target
+        key: ${{ matrix.os }}-build-cache
+
     - name: Run tests
-      run: cargo test --verbose
-      
+      run: cargo test
+
+    - name: Build
+      run: cargo build --release
+
     - name: persist binary
+      if: matrix.os != 'ubuntu-latest'
       uses: actions/upload-artifact@v1
       with:
-        name: jaslog-linux
+        name: jaslog_linux
         path: target/release/jaslog
+
+    - name: persist binary
+      if: matrix.os == 'macOS-latest'
+      uses: actions/upload-artifact@v1
+      with:
+        name: jaslog_macos
+        path: target/release/jaslog
+
+    - name: persist binary
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v1
+      with:
+        name: jaslog_windows.exe
+        path: target/release/jaslog.exe
+
+  release:
+    if: github.ref == 'master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
