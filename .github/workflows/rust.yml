@@ -47,7 +47,7 @@ jobs:
         path: target/release/jaslog.exe
 
   release:
-    if: github.ref == 'master'
+    if: github.ref == 'v*'
     runs-on: ubuntu-latest
     steps:
       - name: Create Release
