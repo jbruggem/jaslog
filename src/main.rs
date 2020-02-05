@@ -23,14 +23,13 @@ fn main() {
 
     .arg(Arg::with_name("input_file")
       .help("Input file to read")
-      .required(true)
+      .required(false)
       .index(1))
 
     .get_matches();
 
   let file_path = options
-    .value_of("input_file")
-    .expect("input_file missing. This should never happen.");
+    .value_of("input_file");
 
   let lines = options
     .value_of("number_of_lines");
