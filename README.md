@@ -2,7 +2,12 @@
 
 ![Rust](https://github.com/jbruggem/jaslog/workflows/Rust/badge.svg)
 
-A log reader for structured logs that can filter based on the properties.
+A log reader for structured logs that handle non-json lines, displays beautifully
+colored logs and can filter based on the fields of the json.
+
+![](doc/screenshot1.png)
+
+![](doc/screenshot2.png)
 
 - non-json lines will be displayed but marked clearly
 - filters work for any fields, even fields that are not recognized
