@@ -1,8 +1,9 @@
 # Jaslog
 
 ![Rust](https://github.com/jbruggem/jaslog/workflows/Rust/badge.svg)
+[![Crates.io](https://img.shields.io/crates/v/jaslog.svg)](https://crates.io/crates/jaslog)
 
-A log reader for structured logs that handle non-json lines, displays beautifully
+A log reader for structured logs that handles non-json lines, displays beautifully
 colored logs and can filter based on the fields of the json.
 
 ![](doc/screenshot1.png)
@@ -16,6 +17,12 @@ colored logs and can filter based on the fields of the json.
 - there is no way to control the formatting
 
 It will work especially well with certain specific JSON structures (see "Supported formats").
+
+## Install
+
+1. Download the binary from the [latest release](https://github.com/jbruggem/jaslog/releases)
+2. Put it in the folder that's part of your PATH
+3. Make it executable (`chmod +x`)
 
 ## Usage
 

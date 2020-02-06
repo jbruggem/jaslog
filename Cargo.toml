@@ -1,8 +1,20 @@
 [package]
 name = "jaslog"
 version = "0.1.4"
-authors = ["Jehan Bruggeman <jehan.bruggeman@euranova.eu>"]
+license = "Apache-2.0"
+authors = ["Jehan Bruggeman <jehan@bruggem.eu>"]
 edition = "2018"
+description = "A colored log reader for JSON logs"
+readme = "README.md"
+homepage = "https://github.com/jbruggem/jaslog"
+repository = "https://github.com/jbruggem/jaslog"
+documentation = "https://github.com/jbruggem/jaslog"
+keywords = ["json", "cli", "logs", "elixir", "java"]
+categories = ["command-line-utilities"]
+exclude = [
+    "doc/*",
+    ".github/*",
+]
 
 [dependencies]
 clap = "~2.33"
