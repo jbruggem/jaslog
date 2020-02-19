@@ -15,6 +15,7 @@ fn main() {
       .long("filter")
       .help("Filter the logs. Example:  -f app=this -f module=+Drive (use '+' to search within the field, use '^' to exclude within the field)")
       .takes_value(true)
+      .number_of_values(1)
       .multiple(true))
 
     .arg(Arg::with_name("number_of_lines")
