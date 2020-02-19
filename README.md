@@ -45,14 +45,14 @@ You can filter. Syntax is:
 * `<field>=^<value>`: search for **absence** of value in field (suggestions of a better syntax are welcome :-P)
 
 ```sh
-$ jaslog -f level=info file.json.log
+$ jaslog file.json.log -f level=info
 ```
 
 You can also can also ask to read only the first n lines:
 
 
 ```sh
-$ jaslog -f level=info -n 50 file.json.log
+$ jaslog file.json.log -f level=info -n 50
 ```
 
 ## Explicitly supported formats
