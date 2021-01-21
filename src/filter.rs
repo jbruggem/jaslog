@@ -13,16 +13,14 @@ pub fn passes_filters(filters: &Vec<Filter>, entry: &Value) -> bool {
   filters.iter().all(|f| f.passes(entry))
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum FilterKind {
   Equals,
   Contains,
   NotContains,
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct Filter {
   key: String,
   kind: FilterKind,
@@ -39,7 +37,7 @@ impl Filter {
       match self.kind {
         FilterKind::Equals => value == self.value,
         FilterKind::Contains => value.contains(self.value.as_str()),
-        FilterKind::NotContains => !value.contains(self.value.as_str())
+        FilterKind::NotContains => !value.contains(self.value.as_str()),
       }
     }
   }
@@ -69,9 +67,9 @@ impl Filter {
 
   fn from(text: &str) -> Filter {
     lazy_static! {
-        static ref CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\+(.+)$").unwrap();
-        static ref NOT_CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\^(.+)$").unwrap();
-        static ref EQUALS_REGEX: Regex = Regex::new(r"^([^=]+)=(.+)").unwrap();
+      static ref CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\+(.+)$").unwrap();
+      static ref NOT_CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\^(.+)$").unwrap();
+      static ref EQUALS_REGEX: Regex = Regex::new(r"^([^=]+)=(.+)").unwrap();
     }
 
     if CONTAINS_REGEX.is_match(text) {
@@ -121,7 +119,12 @@ mod tests {
   #[test]
   fn test_parse_filter_list() {
     assert_eq!(
-      parse_filters(vec!["the_key=+search_for", "this=that", "module=+Drive", "thing=^ploup"]),
+      parse_filters(vec![
+        "the_key=+search_for",
+        "this=that",
+        "module=+Drive",
+        "thing=^ploup"
+      ]),
       vec![
         Filter::contains("the_key", "search_for"),
         Filter::equals("this", "that"),
@@ -151,42 +154,45 @@ mod tests {
 
   #[test]
   fn pass_all_filters() {
-    assert!(passes_filters(&vec![
-      Filter::contains("module", "Flink"),
-      Filter::equals("app", "drive")
-    ], &build_line()));
+    assert!(passes_filters(
+      &vec![
+        Filter::contains("module", "Flink"),
+        Filter::equals("app", "drive")
+      ],
+      &build_line()
+    ));
 
-    assert!(!passes_filters(&vec![
-      Filter::contains("module", "Kafka"),
-      Filter::equals("app", "drive")
-    ], &build_line()));
+    assert!(!passes_filters(
+      &vec![
+        Filter::contains("module", "Kafka"),
+        Filter::equals("app", "drive")
+      ],
+      &build_line()
+    ));
 
-    assert!(!passes_filters(&vec![
-      Filter::equals("module", "Flink"),
-      Filter::equals("app", "drive")
-    ], &build_line()));
+    assert!(!passes_filters(
+      &vec![
+        Filter::equals("module", "Flink"),
+        Filter::equals("app", "drive")
+      ],
+      &build_line()
+    ));
   }
 
   #[test]
   fn parse_and_pass_filters() {
-    assert!(
-      passes_filters(
-        &parse_filters(vec!["app=+drive", "module=+Flink"]),
-        &build_line(),
-      )
-    );
-    assert!(
-      !passes_filters(
-        &parse_filters(vec!["app=operate", "module=+Flink"]),
-        &build_line(),
-      )
-    );
-    assert!(
-      !passes_filters(
-        &parse_filters(vec!["app=drive", "module=^Flink"]),
-        &build_line(),
-      )
-    );
+    assert!(passes_filters(
+      &parse_filters(vec!["app=+drive", "module=+Flink"]),
+      &build_line(),
+    ));
+    assert!(!passes_filters(
+      &parse_filters(vec!["app=operate", "module=+Flink"]),
+      &build_line(),
+    ));
+    assert!(!passes_filters(
+      &parse_filters(vec!["app=drive", "module=^Flink"]),
+      &build_line(),
+    ));
   }
 
   fn build_line() -> Value {

@@ -27,7 +27,9 @@ pub fn read_log(
 ) {
   let stdin = io::stdin();
   let reader: Box<dyn BufRead> = match maybe_file_path {
-    Some(file_path) => Box::new(BufReader::new(File::open(file_path).expect("File should exist"))),
+    Some(file_path) => Box::new(BufReader::new(
+      File::open(file_path).expect("File should exist"),
+    )),
     None => Box::new(stdin.lock()),
   };
 

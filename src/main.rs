@@ -1,6 +1,6 @@
 extern crate clap;
 
-use clap::{Arg, App};
+use clap::{App, Arg};
 use jaslog::read_log;
 
 fn main() {
@@ -31,15 +31,13 @@ fn main() {
 
     .get_matches();
 
-  let file_path = options
-    .value_of("input_file");
+  let file_path = options.value_of("input_file");
 
-  let lines = options
-    .value_of("number_of_lines");
+  let lines = options.value_of("number_of_lines");
 
   let filters: Vec<&str> = match options.values_of("filters") {
     Some(elems) => elems.collect(),
-    _ => Vec::new()
+    _ => Vec::new(),
   };
 
   read_log(file_path, filters, lines);

@@ -1,6 +1,6 @@
+use crate::line_formats::*;
 use colored::*;
 use serde_json::Value;
-use crate::line_formats::*;
 
 pub fn format_not_json(line: &str) -> String {
   format!("{} {}", "[NOT JSON]".red(), line.bold())
@@ -29,12 +29,14 @@ fn color_format_message(entry: Value) -> ColoredString {
 fn format_raw(entry: &Value) -> ColoredString {
   match entry {
     Value::Object(map) => {
-      let meta = map.iter().map(|(key, value)| {
-        match key.as_str() {
+      let meta = map
+        .iter()
+        .map(|(key, value)| match key.as_str() {
           "message" => "".to_string(),
-          _ => format!("[{}]", text_value(value))
-        }
-      }).collect::<Vec<String>>().join(" ");
+          _ => format!("[{}]", text_value(value)),
+        })
+        .collect::<Vec<String>>()
+        .join(" ");
       let text = if entry.get("message").is_some() {
         format!(" {}", &text_value(entry.get("message").unwrap()).bold())
       } else {
@@ -43,7 +45,7 @@ fn format_raw(entry: &Value) -> ColoredString {
       let level = entry.get("level").unwrap_or(&Value::Null).as_str();
       colored_with_maybe_level(level, &format!("{}{}", &meta.trim(), &text))
     }
-    _ => panic!("Unsupported parsed json")
+    _ => panic!("Unsupported parsed json"),
   }
 }
 
@@ -55,7 +57,7 @@ fn text_value(val: &Value) -> String {
 fn colored_with_maybe_level(maybe_level: Option<&str>, text: &str) -> ColoredString {
   match maybe_level {
     None => text.normal(),
-    Some(level) => colored_with_level(level, text)
+    Some(level) => colored_with_level(level, text),
   }
 }
 
@@ -65,17 +67,18 @@ pub fn colored_with_level(level: &str, text: &str) -> ColoredString {
     "warn" => text.yellow(),
     "error" => text.red(),
     "debug" => text.blue(),
-    _ => text.normal()
+    _ => text.normal(),
   }
 }
-
 
 #[cfg(test)]
 mod tests {
   use super::*;
 
   fn join(texts: Vec<ColoredString>) -> String {
-    texts.iter().fold(String::new(), |acc, text| format!("{}{}", acc, text))
+    texts
+      .iter()
+      .fold(String::new(), |acc, text| format!("{}{}", acc, text))
   }
 
   fn render(text: ColoredString) -> String {
@@ -101,10 +104,7 @@ mod tests {
     println!("Actual: {}", format_message(minimal_working_line()));
     assert_eq!(
       format_message(minimal_working_line()),
-      render(join(vec![
-        "[debug] ".normal(),
-        "My minimal working line".bold()
-      ]).blue())
+      render(join(vec!["[debug] ".normal(), "My minimal working line".bold()]).blue())
     );
   }
 

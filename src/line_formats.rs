@@ -1,7 +1,7 @@
-use colored::*;
-use serde_json::Value;
-use serde::{Serialize, Deserialize};
 use crate::format::colored_with_level;
+use colored::*;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 pub trait FormatLogLine {
   fn format(&self) -> ColoredString;
@@ -19,7 +19,10 @@ pub struct ElixirLogLine {
 
 impl FormatLogLine for ElixirLogLine {
   fn format(&self) -> ColoredString {
-    colored_with_level(&self.level, &format!("{} {}", &self.format_meta(), &self.message.bold()))
+    colored_with_level(
+      &self.level,
+      &format!("{} {}", &self.format_meta(), &self.message.bold()),
+    )
   }
 }
 
@@ -27,18 +30,14 @@ impl ElixirLogLine {
   fn format_meta(&self) -> String {
     format!(
       "[{}] [{}] [{}] [{}] [{}]",
-      self.timestamp,
-      self.level,
-      self.app,
-      self.module,
-      self.pid
+      self.timestamp, self.level, self.app, self.module, self.pid
     )
   }
 
   pub fn from(entry: &Value) -> Option<ColoredString> {
     match ElixirLogLine::deserialize(entry) {
       Err(_) => None,
-      Ok(line) => Some(line.format())
+      Ok(line) => Some(line.format()),
     }
   }
 }
@@ -51,7 +50,6 @@ pub struct LogstashJavaLogLine {
   thread_name: String,
   #[serde(alias = "@timestamp")]
   timestamp: String,
-
   // --- unused
   // level_value: i16,
   // @version: 1,
@@ -63,7 +61,10 @@ pub struct LogstashJavaLogLine {
 
 impl FormatLogLine for LogstashJavaLogLine {
   fn format(&self) -> ColoredString {
-    colored_with_level(&self.level, &format!("{} {}", &self.format_meta(), &self.message.bold()))
+    colored_with_level(
+      &self.level,
+      &format!("{} {}", &self.format_meta(), &self.message.bold()),
+    )
   }
 }
 
@@ -71,18 +72,14 @@ impl LogstashJavaLogLine {
   fn format_meta(&self) -> String {
     format!(
       "[{}] [{}] [{}] [{}]",
-      self.timestamp,
-      self.level,
-      self.logger_name,
-      self.thread_name
+      self.timestamp, self.level, self.logger_name, self.thread_name
     )
   }
 
   pub fn from(entry: &Value) -> Option<ColoredString> {
     match LogstashJavaLogLine::deserialize(entry) {
       Err(_) => None,
-      Ok(line) => Some(line.format())
+      Ok(line) => Some(line.format()),
     }
   }
 }
-
