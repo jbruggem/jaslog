@@ -49,9 +49,13 @@ pub fn read_log(
     match serde_json::from_str::<Value>(line.as_str()) {
       Err(_e) => write!(stdout_lock, "{}\n", format_not_json(&line)).unwrap_or(()),
       Ok(v) => {
-        if passes_filters(&filters, &v) {
-          count += 1;
-          write!(stdout_lock, "{}\n", format_message(v)).unwrap_or(())
+        if v.is_object() {
+          if passes_filters(&filters, &v) {
+            count += 1;
+            write!(stdout_lock, "{}\n", format_message(v)).unwrap_or(())
+          }
+        } else {
+          write!(stdout_lock, "{}\n", format_not_json(&line)).unwrap_or(())
         }
       }
     }
