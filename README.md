@@ -20,6 +20,14 @@ It will work especially well with certain specific JSON structures (see "Support
 
 ## Install
 
+### Using cargo install
+
+```bash
+cargo install jaslog
+```
+
+### Using pre-built binaries
+
 1. Download the binary from the [latest release](https://github.com/jbruggem/jaslog/releases)
 2. Put it in the folder that's part of your PATH
 3. Make it executable (`chmod +x`)
