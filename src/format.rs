@@ -2,31 +2,66 @@ use crate::line_formats::*;
 use colored::*;
 use serde_json::Value;
 
-pub fn format_not_json(line: &str) -> String {
-  format!("{} {}", "[NOT JSON]".red(), line.bold())
+type LogLineToColoredString = fn(&Value) -> Option<ColoredString>;
+
+static SPECIFIC_LINE_CONVERTERS: [LogLineToColoredString; 2] = [
+  ElixirLogLine::to_colored_string,
+  LogstashJavaLogLine::to_colored_string,
+];
+
+pub struct Formatter {
+  last_line_converter: Option<LogLineToColoredString>,
 }
 
-pub fn format_message(entry: Value) -> String {
-  format!("{}", color_format_message(entry))
-}
-
-fn color_format_message(entry: Value) -> ColoredString {
-  let mut ret = ElixirLogLine::from(&entry);
-
-  if ret.is_some() {
-    return ret.unwrap();
+impl Formatter {
+  pub fn new() -> Formatter {
+    Formatter {
+      last_line_converter: None,
+    }
   }
 
-  ret = LogstashJavaLogLine::from(&entry);
-
-  if ret.is_some() {
-    return ret.unwrap();
+  pub fn format_not_json(&mut self, line: &str) -> String {
+    format!("{} {}", "[NOT JSON]".red(), line.bold())
   }
 
-  return format_raw(&entry);
+  pub fn format_message(&mut self, entry: Value) -> String {
+    format!("{}", self.color_format_message(entry))
+  }
+
+  fn color_format_message(&mut self, entry: Value) -> ColoredString {
+    return match self.last_line_converter {
+      None => self.color_format_message_try_each(entry),
+      Some(convert) => self.with_fallback(convert, entry),
+    };
+  }
+
+  fn color_format_message_try_each(&mut self, entry: Value) -> ColoredString {
+    for convert in SPECIFIC_LINE_CONVERTERS.iter() {
+      match convert(&entry) {
+        Some(colored_string) => {
+          self.last_line_converter = Some(convert.clone());
+          return colored_string;
+        }
+        _ => continue,
+      }
+    }
+
+    self.last_line_converter = None;
+    return format_generic_json(&entry);
+  }
+
+  fn with_fallback(&mut self, convert: LogLineToColoredString, entry: Value) -> ColoredString {
+    match convert(&entry) {
+      Some(colored_string) => {
+        self.last_line_converter = Some(convert);
+        return colored_string;
+      }
+      None => self.color_format_message_try_each(entry),
+    }
+  }
 }
 
-fn format_raw(entry: &Value) -> ColoredString {
+fn format_generic_json(entry: &Value) -> ColoredString {
   match entry {
     Value::Object(map) => {
       let meta = map
@@ -87,23 +122,26 @@ mod tests {
 
   #[test]
   fn test_format_not_json() {
-    let message = "my raw message that's not JSON";
-    println!("Actual: {}", format_not_json(message));
+    let message = "my GenericJson message that's not JSON";
+    println!("Actual: {}", Formatter::new().format_not_json(message));
     assert_eq!(
-      format_not_json(message),
+      Formatter::new().format_not_json(message),
       join(vec![
         "[NOT JSON]".red(),
         " ".normal(),
-        "my raw message that's not JSON".bold()
+        "my GenericJson message that's not JSON".bold()
       ])
     );
   }
 
   #[test]
   fn test_format_minimal_working_line() {
-    println!("Actual: {}", format_message(minimal_working_line()));
+    println!(
+      "Actual: {}",
+      Formatter::new().format_message(minimal_working_line())
+    );
     assert_eq!(
-      format_message(minimal_working_line()),
+      Formatter::new().format_message(minimal_working_line()),
       render(join(vec!["[debug] ".normal(), "My minimal working line".bold()]).blue())
     );
   }
@@ -117,9 +155,9 @@ mod tests {
 
   #[test]
   fn test_format_random_line() {
-    println!("Actual: {}", format_message(random_line()));
+    println!("Actual: {}", Formatter::new().format_message(random_line()));
     assert_eq!(
-      format_message(random_line()),
+      Formatter::new().format_message(random_line()),
       "[info] [This is a message] [2019-12-18T10:55:50.000345]"
     );
   }
@@ -134,9 +172,9 @@ mod tests {
 
   #[test]
   fn test_format_elixir_line() {
-    println!("Actual: {}", format_message(elixir_line()));
+    println!("Actual: {}", Formatter::new().format_message(elixir_line()));
     assert_eq!(
-      format_message(elixir_line()),
+      Formatter::new().format_message(elixir_line()),
       join(vec![
         "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>] ".normal(),
         "== Migrated 123456789 in 0.0s".bold()
@@ -158,9 +196,12 @@ mod tests {
 
   #[test]
   fn test_format_logstash_java_line() {
-    println!("Actual: {}", format_message(logstash_java_line()));
+    println!(
+      "Actual: {}",
+      Formatter::new().format_message(logstash_java_line())
+    );
     assert_eq!(
-      format_message(logstash_java_line()),
+      Formatter::new().format_message(logstash_java_line()),
       render(join(vec![
         "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3] ".normal(),
         "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".bold()
@@ -184,4 +225,61 @@ mod tests {
       "mdc": {}
     })
   }
+
+  #[test]
+  fn test_format_different_lines() {
+    let mut formatter = Formatter::new();
+
+    assert!(formatter.last_line_converter.is_none());
+
+    assert_eq!(
+      formatter.format_message(logstash_java_line()),
+      render(join(vec![
+        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3] ".normal(),
+        "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".bold()
+      ]).blue())
+    );
+
+    assert!(formatter.last_line_converter.is_some());
+
+    assert_eq!(
+      formatter.format_message(elixir_line()),
+      join(vec![
+        "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>] ".normal(),
+        "== Migrated 123456789 in 0.0s".bold()
+      ])
+    );
+
+    assert!(formatter.last_line_converter.is_some());
+
+    assert_eq!(
+      formatter.format_message(random_line()),
+      "[info] [This is a message] [2019-12-18T10:55:50.000345]"
+    );
+
+    assert!(formatter.last_line_converter.is_none());
+
+    assert_eq!(
+      formatter.format_message(elixir_line()),
+      join(vec![
+        "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>] ".normal(),
+        "== Migrated 123456789 in 0.0s".bold()
+      ])
+    );
+
+    assert!(formatter.last_line_converter.is_some());
+
+    assert_eq!(
+      formatter.format_message(logstash_java_line()),
+      render(join(vec![
+        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3] ".normal(),
+        "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".bold()
+      ]).blue())
+    );
+
+    assert!(formatter.last_line_converter.is_some());
+
+  }
+
+
 }

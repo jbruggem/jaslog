@@ -4,7 +4,7 @@ extern crate regex;
 extern crate serde;
 
 // Used for tests
-#[macro_use]
+#[cfg_attr(test, macro_use)]
 extern crate serde_json;
 
 use serde_json::Value;
@@ -43,21 +43,22 @@ pub fn read_log(
 
   let stdout = io::stdout();
   let mut stdout_lock = stdout.lock();
+  let mut formatter = Formatter::new();
   for maybe_line in reader.lines() {
     if number_of_lines.is_some() && count > number_of_lines.unwrap() {
       return;
     }
     let line = maybe_line.expect("Line should exist");
     match serde_json::from_str::<Value>(line.as_str()) {
-      Err(_e) => write!(stdout_lock, "{}\n", format_not_json(&line)).unwrap_or(()),
+      Err(_e) => write!(stdout_lock, "{}\n", formatter.format_not_json(&line)).unwrap_or(()),
       Ok(v) => {
         if v.is_object() {
           if passes_filters(&filters, &v) {
             count += 1;
-            write!(stdout_lock, "{}\n", format_message(v)).unwrap_or(())
+            write!(stdout_lock, "{}\n", formatter.format_message(v)).unwrap_or(())
           }
         } else {
-          write!(stdout_lock, "{}\n", format_not_json(&line)).unwrap_or(())
+          write!(stdout_lock, "{}\n", formatter.format_not_json(&line)).unwrap_or(())
         }
       }
     }

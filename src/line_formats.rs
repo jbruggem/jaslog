@@ -7,6 +7,14 @@ pub trait FormatLogLine {
   fn format(&self) -> ColoredString;
 }
 
+pub trait ToColoredString {
+  fn to_colored_string(entry: &Value) -> Option<ColoredString>;
+}
+
+//////////////////////////////////
+/// ElixirLogLine
+//////////////////////////////////
+
 #[derive(Serialize, Deserialize)]
 pub struct ElixirLogLine {
   app: String,
@@ -33,14 +41,20 @@ impl ElixirLogLine {
       self.timestamp, self.level, self.app, self.module, self.pid
     )
   }
+}
 
-  pub fn from(entry: &Value) -> Option<ColoredString> {
+impl ToColoredString for ElixirLogLine {
+  fn to_colored_string(entry: &Value) -> Option<ColoredString> {
     match ElixirLogLine::deserialize(entry) {
       Err(_) => None,
       Ok(line) => Some(line.format()),
     }
   }
 }
+
+//////////////////////////////////
+/// LogstashJavaLogLine
+//////////////////////////////////
 
 #[derive(Serialize, Deserialize)]
 pub struct LogstashJavaLogLine {
@@ -68,18 +82,20 @@ impl FormatLogLine for LogstashJavaLogLine {
   }
 }
 
+impl ToColoredString for LogstashJavaLogLine {
+  fn to_colored_string(entry: &Value) -> Option<ColoredString> {
+    match LogstashJavaLogLine::deserialize(entry) {
+      Err(_) => None,
+      Ok(line) => Some(line.format()),
+    }
+  }
+}
+
 impl LogstashJavaLogLine {
   fn format_meta(&self) -> String {
     format!(
       "[{}] [{}] [{}] [{}]",
       self.timestamp, self.level, self.logger_name, self.thread_name
     )
-  }
-
-  pub fn from(entry: &Value) -> Option<ColoredString> {
-    match LogstashJavaLogLine::deserialize(entry) {
-      Err(_) => None,
-      Ok(line) => Some(line.format()),
-    }
   }
 }
