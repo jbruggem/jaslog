@@ -2,6 +2,8 @@ use crate::format::colored_with_level;
 use colored::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+extern crate chrono;
+use chrono::prelude::*;
 
 pub trait FormatLogLine {
   fn format(&self) -> ColoredString;
@@ -96,6 +98,72 @@ impl LogstashJavaLogLine {
     format!(
       "[{}] [{}] [{}] [{}]",
       self.timestamp, self.level, self.logger_name, self.thread_name
+    )
+  }
+}
+
+//////////////////////////////////
+/// Log4J's default JSONLayout
+//////////////////////////////////
+
+#[derive(Serialize, Deserialize)]
+pub struct Log4JJsonLayoutLogLine {
+  #[serde(alias = "thread")]
+  thread_name: String,
+  level: String,
+  #[serde(alias = "loggerName")]
+  logger_name: String,
+  #[serde(alias = "endOfBatch")]
+  end_of_batch: bool,
+  #[serde(alias = "loggerFqcn")]
+  logger_fqcn: String,
+  message: String,
+
+  instant: Log4JJsonLayoutLogLineInstant,
+  #[serde(alias = "threadId")]
+  thread_id: i32,
+  #[serde(alias = "threadPriority")]
+  thread_priority: i32,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Log4JJsonLayoutLogLineInstant {
+  #[serde(alias = "epochSecond")]
+  epoch_second: i64,
+  #[serde(alias = "nanoOfSecond")]
+  nano_of_second: u32,
+}
+
+impl FormatLogLine for Log4JJsonLayoutLogLine {
+  fn format(&self) -> ColoredString {
+    colored_with_level(
+      &self.level,
+      &format!("{} {}", &self.format_meta(), &self.message.bold()),
+    )
+  }
+}
+
+impl ToColoredString for Log4JJsonLayoutLogLine {
+  fn to_colored_string(entry: &Value) -> Option<ColoredString> {
+    match Log4JJsonLayoutLogLine::deserialize(entry) {
+      Err(_) => None,
+      Ok(line) => Some(line.format()),
+    }
+  }
+}
+
+impl Log4JJsonLayoutLogLine {
+  fn format_meta(&self) -> String {
+    let naive_datetime =
+      NaiveDateTime::from_timestamp(self.instant.epoch_second, self.instant.nano_of_second);
+    let datetime: DateTime<Utc> = DateTime::from_utc(naive_datetime, Utc);
+
+    format!(
+      "[{}] [{}] [{}] [{}]",
+      datetime.format("%+"),
+      self.level,
+      self.logger_name,
+      self.thread_name
     )
   }
 }

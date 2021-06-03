@@ -4,9 +4,10 @@ use serde_json::Value;
 
 type LogLineToColoredString = fn(&Value) -> Option<ColoredString>;
 
-static SPECIFIC_LINE_CONVERTERS: [LogLineToColoredString; 2] = [
+static SPECIFIC_LINE_CONVERTERS: [LogLineToColoredString; 3] = [
   ElixirLogLine::to_colored_string,
   LogstashJavaLogLine::to_colored_string,
+  Log4JJsonLayoutLogLine::to_colored_string,
 ];
 
 pub struct Formatter {
@@ -29,6 +30,9 @@ impl Formatter {
   }
 
   fn color_format_message(&mut self, entry: Value) -> ColoredString {
+    if cfg!(test) {
+      println!("color_format_message");
+    }
     return match self.last_line_converter {
       None => self.color_format_message_try_each(entry),
       Some(convert) => self.with_fallback(convert, entry),
@@ -36,9 +40,16 @@ impl Formatter {
   }
 
   fn color_format_message_try_each(&mut self, entry: Value) -> ColoredString {
+    if cfg!(test) {
+      println!("color_format_message_try_each");
+    }
+
     for convert in SPECIFIC_LINE_CONVERTERS.iter() {
       match convert(&entry) {
         Some(colored_string) => {
+          if cfg!(test) {
+            println!("Convert picked");
+          }
           self.last_line_converter = Some(convert.clone());
           return colored_string;
         }
@@ -46,11 +57,17 @@ impl Formatter {
       }
     }
 
+    if cfg!(test) {
+      println!("No convert picked");
+    }
     self.last_line_converter = None;
     return format_generic_json(&entry);
   }
 
   fn with_fallback(&mut self, convert: LogLineToColoredString, entry: Value) -> ColoredString {
+    if cfg!(test) {
+      println!("with_fallback");
+    }
     match convert(&entry) {
       Some(colored_string) => {
         self.last_line_converter = Some(convert);
@@ -278,8 +295,37 @@ mod tests {
     );
 
     assert!(formatter.last_line_converter.is_some());
-
   }
 
+  #[test]
+  fn test_format_log4j_json_layout_java_line() {
+    println!(
+      "Actual: {}",
+      Formatter::new().format_message(log4j_json_layout_java_line())
+    );
+    assert_eq!(
+      Formatter::new().format_message(log4j_json_layout_java_line()),
+      render(join(vec![
+        "[2021-06-03T12:50:07.420+00:00] [WARN] [org.apache.flink.runtime.dispatcher.DispatcherRestEndpoint] [main] ".normal(),
+        "Starting rest endpoint.".bold()
+      ]).yellow())
+    );
+  }
 
+  fn log4j_json_layout_java_line() -> Value {
+    json!({
+      "thread": "main",
+      "level": "WARN",
+      "loggerName": "org.apache.flink.runtime.dispatcher.DispatcherRestEndpoint",
+      "message": "Starting rest endpoint.",
+      "endOfBatch": false,
+      "loggerFqcn": "org.apache.logging.slf4j.Log4jLogger",
+      "instant": {
+        "epochSecond": 1622724607,
+        "nanoOfSecond": 420000000
+      },
+      "threadId": 1,
+      "threadPriority": 5
+    })
+  }
 }

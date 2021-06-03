@@ -63,13 +63,13 @@ Elixir logs:
 
 ```json
 {
-    "app": "ecto_sql",
-    "level": "info",
-    "message": "create index etc...",
-    "metadata": {},
-    "module": "Elixir.Ecto.Migration.Runner",
-    "pid": "#PID<0.280.0>",
-    "timestamp": "2019-12-18T10:55:50.000393"
+  "app": "ecto_sql",
+  "level": "info",
+  "message": "create index etc...",
+  "metadata": {},
+  "module": "Elixir.Ecto.Migration.Runner",
+  "pid": "#PID<0.280.0>",
+  "timestamp": "2019-12-18T10:55:50.000393"
 }
 ```
 
@@ -77,19 +77,38 @@ Logstash's jsonevent-layout logs:
 
 ```json
 {
-    "@timestamp": "2020-01-13T12:34:01.740Z",
-    "source_host": "04fc4fd30dc3",
-    "file": "Dispatcher.java",
-    "method": "tryAcceptLeadershipAndRunJobs",
-    "level": "DEBUG",
-    "line_number": "927",
-    "thread_name": "flink-akka.actor.default-dispatcher-3",
-    "@version": 1,
-    "logger_name": "org.apache.flink.runtime.dispatcher.StandaloneDispatcher",
-    "message": "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.",
-    "class": "org.apache.flink.runtime.dispatcher.Dispatcher",
-    "mdc": {}
-    }
+  "@timestamp": "2020-01-13T12:34:01.740Z",
+  "source_host": "04fc4fd30dc3",
+  "file": "Dispatcher.java",
+  "method": "tryAcceptLeadershipAndRunJobs",
+  "level": "DEBUG",
+  "line_number": "927",
+  "thread_name": "flink-akka.actor.default-dispatcher-3",
+  "@version": 1,
+  "logger_name": "org.apache.flink.runtime.dispatcher.StandaloneDispatcher",
+  "message": "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.",
+  "class": "org.apache.flink.runtime.dispatcher.Dispatcher",
+  "mdc": {}
+  }
+```
+
+Log4J's JSONLayout logs:
+
+```json
+{
+  "thread": "main",
+  "level": "INFO",
+  "loggerName": "org.apache.flink.runtime.dispatcher.DispatcherRestEndpoint",
+  "message": "Starting rest endpoint.",
+  "endOfBatch": false,
+  "loggerFqcn": "org.apache.logging.slf4j.Log4jLogger",
+  "instant": {
+    "epochSecond": 1622724607,
+    "nanoOfSecond": 420000000
+  },
+  "threadId": 1,
+  "threadPriority": 5
+}
 ```
 
 ### Releasing
@@ -97,3 +116,4 @@ Logstash's jsonevent-layout logs:
 * Update version in Cargo.toml
 * Commit
 * tag with `v<version>`, then push
+* run `cargo publish`
