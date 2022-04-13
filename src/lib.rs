@@ -45,22 +45,28 @@ pub fn read_log(
   let mut stdout_lock = stdout.lock();
   let mut formatter = Formatter::new();
   for maybe_line in reader.lines() {
-    if number_of_lines.is_some() && count > number_of_lines.unwrap() {
+    if number_of_lines.is_some() && count >= number_of_lines.unwrap() {
       return;
     }
     let line = maybe_line.expect("Line should exist");
-    match serde_json::from_str::<Value>(line.as_str()) {
-      Err(_e) => write!(stdout_lock, "{}\n", formatter.format_not_json(&line)).unwrap_or(()),
+    let output = match serde_json::from_str::<Value>(line.as_str()) {
+      Err(_e) => Some(formatter.format_not_json(&line)),
       Ok(v) => {
         if v.is_object() {
           if passes_filters(&filters, &v) {
-            count += 1;
-            write!(stdout_lock, "{}\n", formatter.format_message(v)).unwrap_or(())
+            Some(formatter.format_message(v))
+          } else {
+            None
           }
         } else {
-          write!(stdout_lock, "{}\n", formatter.format_not_json(&line)).unwrap_or(())
+          Some(formatter.format_not_json(&line))
         }
       }
+    };
+
+    if output.is_some() {
+      write!(stdout_lock, "{}\n", output.unwrap()).unwrap_or(());
+      count += 1;
     }
   }
 }
