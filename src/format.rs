@@ -28,7 +28,7 @@ impl Formatter {
   }
 
   pub fn format_not_json(&mut self, line: &str) -> String {
-    format!("{} {}", "[NOT JSON]".red(), line.bold())
+    format!("{} {}", "[NOT JSON]".red(), line)
   }
 
   pub fn format_message(&mut self, entry: Value) -> String {
@@ -96,12 +96,12 @@ fn format_generic_json(entry: &Value) -> ColoredString {
         .collect::<Vec<String>>()
         .join(" ");
       let text = if entry.get("message").is_some() {
-        format!(" {}", &text_value(entry.get("message").unwrap()).bold())
+        format!(" {}", &text_value(entry.get("message").unwrap()))
       } else {
         "".to_string()
       };
       let level = entry.get("level").unwrap_or(&Value::Null).as_str();
-      colored_with_maybe_level(level, &format!("{}{}", &meta.trim(), &text))
+      colored_with_maybe_level(level, &format!("{}{}", &meta.trim().dimmed(), &text))
     }
     _ => panic!("Unsupported parsed json"),
   }
@@ -124,11 +124,11 @@ fn colored_with_maybe_level(maybe_level: Option<&str>, text: &str) -> ColoredStr
 
 pub fn colored_with_level(level: &str, text: &str) -> ColoredString {
   match level.to_lowercase().as_str() {
-    "info" => text.normal(),
+    "info" => text.white(),
     "warn" => text.yellow(),
     "error" => text.red(),
     "debug" => text.blue(),
-    _ => text.normal(),
+    _ => text.white(),
   }
 }
 

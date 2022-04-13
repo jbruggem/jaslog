@@ -31,7 +31,7 @@ impl FormatLogLine for ElixirLogLine {
   fn format(&self) -> ColoredString {
     colored_with_level(
       &self.level,
-      &format!("{} {}", &self.format_meta(), &self.message.bold()),
+      &format!("{} {}", &self.format_meta().dimmed(), &self.message),
     )
   }
 }
@@ -79,7 +79,7 @@ impl FormatLogLine for LogstashJavaLogLine {
   fn format(&self) -> ColoredString {
     colored_with_level(
       &self.level,
-      &format!("{} {}", &self.format_meta(), &self.message.bold()),
+      &format!("{} {}", &self.format_meta().dimmed(), &self.message),
     )
   }
 }
@@ -138,7 +138,7 @@ impl FormatLogLine for Log4JJsonLayoutLogLine {
   fn format(&self) -> ColoredString {
     colored_with_level(
       &self.level,
-      &format!("{} {}", &self.format_meta(), &self.message.bold()),
+      &format!("{} {}", &self.format_meta().dimmed(), &self.message),
     )
   }
 }
