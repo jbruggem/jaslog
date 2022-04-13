@@ -34,6 +34,8 @@ cargo install jaslog
 
 ## Usage
 
+
+
 Basic usage:
 
 ```sh
@@ -46,7 +48,25 @@ Or using stdin:
 $ cat file.json.log | jaslog
 ```
 
-You can filter. Syntax is:
+### CLI parameters
+
+```
+USAGE:
+    jaslog [OPTIONS] [--] [input_file]
+
+ARGS:
+    <input_file>    Input file to read
+
+OPTIONS:
+    -f, --filter <filters>           Filter the logs. Example:  -f app=this -f module=+Drive (use
+                                     '+' to search within the field, use '^' to exclude within the
+                                     field)
+    -h, --help                       Print help information
+    -n, --lines <number_of_lines>    Number of lines to read.
+    -V, --version                    Print version information
+```
+
+To filter, the syntax is:
 
 * `<field>=<value>`: search for exact value of field
 * `<field>=+<value>`: search for value in field (suggestions of a better syntax are welcome :-P)
@@ -57,7 +77,6 @@ $ jaslog file.json.log -f level=info
 ```
 
 You can also can also ask to read only the first n lines:
-
 
 ```sh
 $ jaslog file.json.log -f level=info -n 50
