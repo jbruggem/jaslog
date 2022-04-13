@@ -4,7 +4,7 @@ use clap::{App, Arg};
 use jaslog::read_log;
 
 fn main() {
-  const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+  const VERSION: &str = env!("CARGO_PKG_VERSION");
 
   let options = App::new("jaslog")
     .version(VERSION)

@@ -14,8 +14,14 @@ pub struct Formatter {
   last_line_converter: Option<LogLineToColoredString>,
 }
 
+impl Default for Formatter {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl Formatter {
-  pub fn new() -> Formatter {
+  pub fn new() -> Self {
     Formatter {
       last_line_converter: None,
     }
@@ -33,10 +39,10 @@ impl Formatter {
     if cfg!(test) {
       println!("color_format_message");
     }
-    return match self.last_line_converter {
+    match self.last_line_converter {
       None => self.color_format_message_try_each(entry),
       Some(convert) => self.with_fallback(convert, entry),
-    };
+    }
   }
 
   fn color_format_message_try_each(&mut self, entry: Value) -> ColoredString {
@@ -50,7 +56,7 @@ impl Formatter {
           if cfg!(test) {
             println!("Convert picked");
           }
-          self.last_line_converter = Some(convert.clone());
+          self.last_line_converter = Some(*convert);
           return colored_string;
         }
         _ => continue,
@@ -61,7 +67,7 @@ impl Formatter {
       println!("No convert picked");
     }
     self.last_line_converter = None;
-    return format_generic_json(&entry);
+    format_generic_json(&entry)
   }
 
   fn with_fallback(&mut self, convert: LogLineToColoredString, entry: Value) -> ColoredString {
@@ -71,7 +77,7 @@ impl Formatter {
     match convert(&entry) {
       Some(colored_string) => {
         self.last_line_converter = Some(convert);
-        return colored_string;
+        colored_string
       }
       None => self.color_format_message_try_each(entry),
     }
@@ -103,7 +109,10 @@ fn format_generic_json(entry: &Value) -> ColoredString {
 
 fn text_value(val: &Value) -> String {
   // If it's a string, show the string literal. Otherwise, render the json
-  val.as_str().unwrap_or(val.to_string().as_str()).to_string()
+  match val.as_str() {
+    Some(text) => text.to_string(),
+    None => val.to_string(),
+  }
 }
 
 fn colored_with_maybe_level(maybe_level: Option<&str>, text: &str) -> ColoredString {

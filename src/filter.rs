@@ -2,14 +2,10 @@ use regex::Regex;
 use serde_json::Value;
 
 pub fn parse_filters(unparsed_filters: Vec<&str>) -> Vec<Filter> {
-  unparsed_filters
-    .iter()
-    .map(|t| *t)
-    .map(Filter::from)
-    .collect()
+  unparsed_filters.iter().copied().map(Filter::from).collect()
 }
 
-pub fn passes_filters(filters: &Vec<Filter>, entry: &Value) -> bool {
+pub fn passes_filters(filters: &[Filter], entry: &Value) -> bool {
   filters.iter().all(|f| f.passes(entry))
 }
 
@@ -30,15 +26,15 @@ pub struct Filter {
 impl Filter {
   fn passes(&self, entry: &Value) -> bool {
     let possible_value = entry.get(&self.key);
-    if possible_value.is_none() {
-      false
-    } else {
-      let value = possible_value.unwrap().as_str().unwrap();
+    if let Some(some_value) = possible_value {
+      let value = some_value.as_str().unwrap();
       match self.kind {
         FilterKind::Equals => value == self.value,
         FilterKind::Contains => value.contains(self.value.as_str()),
         FilterKind::NotContains => !value.contains(self.value.as_str()),
       }
+    } else {
+      false
     }
   }
 

@@ -65,7 +65,7 @@ pub fn read_log(
     };
 
     if output.is_some() {
-      write!(stdout_lock, "{}\n", output.unwrap()).unwrap_or(());
+      writeln!(stdout_lock, "{}", output.unwrap()).unwrap_or(());
       count += 1;
     }
   }
