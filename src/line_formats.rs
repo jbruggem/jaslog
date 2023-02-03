@@ -1,7 +1,7 @@
 use crate::format::colored_with_level;
 use colored::*;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Map, Value};
 extern crate chrono;
 use chrono::prelude::*;
 
@@ -11,6 +11,25 @@ pub trait FormatLogLine {
 
 pub trait ToColoredString {
   fn to_colored_string(entry: &Value) -> Option<ColoredString>;
+}
+
+fn format_mdc(mdc: &Map<String, Value>) -> String {
+  if !mdc.is_empty() {
+    let res = mdc
+      .clone()
+      .into_iter()
+      .map(|(key, value)| {
+        let shown_value = match value {
+          Value::String(val) => val,
+          other => format!("{other:?}"),
+        };
+        format!("{key}={}", shown_value.trim())
+      })
+      .collect::<Vec<String>>();
+    format!("[{}]", res.join(","))
+  } else {
+    "".to_string()
+  }
 }
 
 //////////////////////////////////
@@ -69,17 +88,24 @@ pub struct LogstashJavaLogLine {
   // --- unused
   // level_value: i16,
   // @version: 1,
+  // tags: list of tags (optional)
+  #[serde(default)]
+  mdc: Map<String, Value>,
 
-  // --- optional
-  // stack_trace: String
-  // tags: list of tags
+  #[serde(default)]
+  stack_trace: String,
 }
 
 impl FormatLogLine for LogstashJavaLogLine {
   fn format(&self) -> ColoredString {
     colored_with_level(
       &self.level,
-      &format!("{} {}", &self.format_meta().dimmed(), &self.message),
+      &format!(
+        "{} {}{}",
+        &self.format_meta().dimmed(),
+        &self.message,
+        &self.format_stacktrace()
+      ),
     )
   }
 }
@@ -96,9 +122,24 @@ impl ToColoredString for LogstashJavaLogLine {
 impl LogstashJavaLogLine {
   fn format_meta(&self) -> String {
     format!(
-      "[{}] [{}] [{}] [{}]",
-      self.timestamp, self.level, self.logger_name, self.thread_name
+      "[{}] [{}] [{}] [{}]{}",
+      self.timestamp,
+      self.level,
+      self.logger_name,
+      self.thread_name,
+      self.format_mdc()
     )
+  }
+  fn format_stacktrace(&self) -> String {
+    if !self.stack_trace.is_empty() {
+      format!("\n\t{}", self.stack_trace.replace('\n', "\n\t"))
+    } else {
+      "".to_string()
+    }
+  }
+
+  fn format_mdc(&self) -> String {
+    format_mdc(&self.mdc)
   }
 }
 
@@ -126,6 +167,8 @@ pub struct Log4JJsonLayoutLogLine {
   thread_priority: i32,
   #[serde(default)]
   thrown: Log4JJsonLayoutLogLineThrown,
+  #[serde(default)]
+  mdc: Map<String, Value>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
@@ -190,8 +233,16 @@ impl Log4JJsonLayoutLogLine {
         .unwrap_or(self.instant.epoch_second.to_string());
 
     format!(
-      "[{}] [{}] [{}] [{}]",
-      formatted_datetime, self.level, self.logger_name, self.thread_name
+      "[{}] [{}] [{}] [{}]{}",
+      formatted_datetime,
+      self.level,
+      self.logger_name,
+      self.thread_name,
+      self.format_mdc()
     )
+  }
+
+  fn format_mdc(&self) -> String {
+    format_mdc(&self.mdc)
   }
 }
