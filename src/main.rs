@@ -14,31 +14,33 @@ fn main() {
       .short('f')
       .long("filter")
       .help("Filter the logs. Example:  -f app=this -f module=+Drive (use '+' to search within the field, use '^' to exclude within the field)")
-      .takes_value(true)
-      .number_of_values(1)
-      .multiple_occurrences(true))
+      .action(clap::ArgAction::Append))
 
     .arg(Arg::new("number_of_lines")
       .short('n')
       .long("lines")
       .help("Number of lines to read.")
-      .takes_value(true))
+      .num_args(1)
+      .value_parser(clap::value_parser!(u64))
+      .action(clap::ArgAction::Set))
+
 
     .arg(Arg::new("input_file")
       .help("Input file to read")
       .required(false)
-      .index(1))
+      .index(1)
+      .action(clap::ArgAction::Set))
 
     .get_matches();
 
-  let file_path = options.value_of("input_file");
+  let file_path = options.get_one::<String>("input_file");
 
-  let lines = options.value_of("number_of_lines");
+  let lines = options.get_one::<u64>("number_of_lines");
 
-  let filters: Vec<&str> = match options.values_of("filters") {
-    Some(elems) => elems.collect(),
-    _ => Vec::new(),
-  };
+  let filters: Vec<&str> = options
+    .get_many::<&str>("filters")
+    .map(|filters| filters.copied().collect())
+    .unwrap_or(Vec::new());
 
   read_log(file_path, filters, lines);
 }

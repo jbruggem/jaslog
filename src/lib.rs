@@ -21,9 +21,9 @@ use filter::*;
 use format::*;
 
 pub fn read_log(
-  maybe_file_path: Option<&str>,
+  maybe_file_path: Option<&String>,
   unparsed_filters: Vec<&str>,
-  number_of_lines_option: Option<&str>,
+  number_of_lines: Option<&u64>,
 ) {
   let stdin = io::stdin();
   let reader: Box<dyn BufRead> = match maybe_file_path {
@@ -33,19 +33,15 @@ pub fn read_log(
     None => Box::new(stdin.lock()),
   };
 
-  let number_of_lines = number_of_lines_option.map(|n| {
-    n.parse::<i32>()
-      .expect("'lines' options should be a valid number.")
-  });
   let filters = parse_filters(unparsed_filters);
 
-  let mut count: i32 = 0;
+  let mut count: u64 = 0;
 
   let stdout = io::stdout();
   let mut stdout_lock = stdout.lock();
   let mut formatter = Formatter::new();
   for maybe_line in reader.lines() {
-    if number_of_lines.is_some() && count >= number_of_lines.unwrap() {
+    if number_of_lines.is_some() && count >= * number_of_lines.unwrap() {
       return;
     }
     let line = maybe_line.expect("Line should exist");
