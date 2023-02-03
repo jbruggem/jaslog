@@ -41,7 +41,7 @@ pub fn read_log(
   let mut stdout_lock = stdout.lock();
   let mut formatter = Formatter::new();
   for maybe_line in reader.lines() {
-    if number_of_lines.is_some() && count >= * number_of_lines.unwrap() {
+    if number_of_lines.is_some() && count >= *number_of_lines.unwrap() {
       return;
     }
     let line = maybe_line.expect("Line should exist");
