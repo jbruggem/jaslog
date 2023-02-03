@@ -124,6 +124,18 @@ pub struct Log4JJsonLayoutLogLine {
   thread_id: i32,
   #[serde(alias = "threadPriority")]
   thread_priority: i32,
+  #[serde(default)]
+  thrown: Log4JJsonLayoutLogLineThrown,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+struct Log4JJsonLayoutLogLineThrown {
+  #[serde(alias = "commonElementCount")]
+  common_element_count: i32,
+  #[serde(alias = "localizedMessage")]
+  localized_message: String,
+  message: String,
+  name: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -138,7 +150,12 @@ impl FormatLogLine for Log4JJsonLayoutLogLine {
   fn format(&self) -> ColoredString {
     colored_with_level(
       &self.level,
-      &format!("{} {}", &self.format_meta().dimmed(), &self.message),
+      &format!(
+        "{} {}{}",
+        &self.format_meta().dimmed(),
+        &self.message,
+        &self.format_stacktrace()
+      ),
     )
   }
 }
@@ -153,6 +170,18 @@ impl ToColoredString for Log4JJsonLayoutLogLine {
 }
 
 impl Log4JJsonLayoutLogLine {
+  fn format_stacktrace(&self) -> String {
+    if !self.thrown.message.is_empty() {
+      format!(
+        "\n\t{}\n\t{}",
+        self.thrown.name,
+        self.thrown.message.replace("\n", "\t\n")
+      )
+    } else {
+      "".to_string()
+    }
+  }
+
   fn format_meta(&self) -> String {
     let naive_datetime =
       NaiveDateTime::from_timestamp(self.instant.epoch_second, self.instant.nano_of_second);

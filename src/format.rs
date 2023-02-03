@@ -155,7 +155,7 @@ mod tests {
       join(vec![
         "[NOT JSON]".red(),
         " ".normal(),
-        "my GenericJson message that's not JSON".bold()
+        "my GenericJson message that's not JSON".normal()
       ])
     );
   }
@@ -168,7 +168,13 @@ mod tests {
     );
     assert_eq!(
       Formatter::new().format_message(minimal_working_line()),
-      render(join(vec!["[debug] ".normal(), "My minimal working line".bold()]).blue())
+      render(
+        join(vec![
+          "[debug]".dimmed(),
+          " My minimal working line".normal()
+        ])
+        .blue()
+      )
     );
   }
 
@@ -181,11 +187,13 @@ mod tests {
 
   #[test]
   fn test_format_random_line() {
-    println!("Actual: {}", Formatter::new().format_message(random_line()));
-    assert_eq!(
-      Formatter::new().format_message(random_line()),
-      "[info] [This is a message] [2019-12-18T10:55:50.000345]"
+    let expected = render("[info] [This is a message] [2019-12-18T10:55:50.000345]".dimmed());
+    println!(
+      "Actual:   {}",
+      Formatter::new().format_message(random_line())
     );
+    println!("Expected: {}", expected);
+    assert_eq!(Formatter::new().format_message(random_line()), expected);
   }
 
   fn random_line() -> Value {
@@ -198,14 +206,16 @@ mod tests {
 
   #[test]
   fn test_format_elixir_line() {
-    println!("Actual: {}", Formatter::new().format_message(elixir_line()));
-    assert_eq!(
-      Formatter::new().format_message(elixir_line()),
-      join(vec![
-        "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>] ".normal(),
-        "== Migrated 123456789 in 0.0s".bold()
-      ])
+    let expected = render(join(vec![
+      "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>]".dimmed(),
+      " == Migrated 123456789 in 0.0s".normal()
+    ]).white());
+    println!(
+      "Actual:   {}",
+      Formatter::new().format_message(elixir_line())
     );
+    println!("Expected: {}", expected);
+    assert_eq!(Formatter::new().format_message(elixir_line()), expected);
   }
 
   fn elixir_line() -> Value {
@@ -229,8 +239,8 @@ mod tests {
     assert_eq!(
       Formatter::new().format_message(logstash_java_line()),
       render(join(vec![
-        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3] ".normal(),
-        "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".bold()
+        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3]".dimmed(),
+        " Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".normal()
       ]).blue())
     );
   }
@@ -261,8 +271,8 @@ mod tests {
     assert_eq!(
       formatter.format_message(logstash_java_line()),
       render(join(vec![
-        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3] ".normal(),
-        "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".bold()
+        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3]".dimmed(),
+        " Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".normal()
       ]).blue())
     );
 
@@ -270,27 +280,27 @@ mod tests {
 
     assert_eq!(
       formatter.format_message(elixir_line()),
-      join(vec![
-        "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>] ".normal(),
-        "== Migrated 123456789 in 0.0s".bold()
-      ])
+      render(join(vec![
+        "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>]".dimmed(),
+        " == Migrated 123456789 in 0.0s".normal()
+      ]).white())
     );
 
     assert!(formatter.last_line_converter.is_some());
 
     assert_eq!(
       formatter.format_message(random_line()),
-      "[info] [This is a message] [2019-12-18T10:55:50.000345]"
+      render("[info] [This is a message] [2019-12-18T10:55:50.000345]".dimmed())
     );
 
     assert!(formatter.last_line_converter.is_none());
 
     assert_eq!(
       formatter.format_message(elixir_line()),
-      join(vec![
-        "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>] ".normal(),
-        "== Migrated 123456789 in 0.0s".bold()
-      ])
+      render(join(vec![
+        "[2019-12-18T10:55:50.000345] [info] [ecto_sql] [Elixir.Ecto.Migration.Runner] [#PID<0.274.0>]".dimmed(),
+        " == Migrated 123456789 in 0.0s".normal()
+      ]).white())
     );
 
     assert!(formatter.last_line_converter.is_some());
@@ -298,8 +308,8 @@ mod tests {
     assert_eq!(
       formatter.format_message(logstash_java_line()),
       render(join(vec![
-        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3] ".normal(),
-        "Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".bold()
+        "[2020-01-13T12:34:01.740Z] [DEBUG] [org.apache.flink.runtime.dispatcher.StandaloneDispatcher] [flink-akka.actor.default-dispatcher-3]".dimmed(),
+        " Dispatcher akka.tcp://flink@04fc4fd30dc3:6123/user/dispatcher accepted leadership with fencing token 00000000000000000000000000000000. Start recovered jobs.".normal()
       ]).blue())
     );
 
@@ -315,9 +325,25 @@ mod tests {
     assert_eq!(
       Formatter::new().format_message(log4j_json_layout_java_line()),
       render(join(vec![
-        "[2021-06-03T12:50:07.420+00:00] [WARN] [org.apache.flink.runtime.dispatcher.DispatcherRestEndpoint] [main] ".normal(),
-        "Starting rest endpoint.".bold()
+        "[2021-06-03T12:50:07.420+00:00] [WARN] [org.apache.flink.runtime.dispatcher.DispatcherRestEndpoint] [main]".dimmed(),
+        " Starting rest endpoint.".normal()
       ]).yellow())
+    );
+  }
+
+  #[test]
+  fn test_format_log4j_json_layout_java_line_with_thrown() {
+    println!(
+      "Actual: {}",
+      Formatter::new().format_message(log4j_json_layout_java_line_with_thrown())
+    );
+    assert_eq!(
+      Formatter::new().format_message(log4j_json_layout_java_line_with_thrown()),
+      render(join(vec![
+        "[2023-02-03T08:44:36.072210+00:00] [ERROR] [akka.remote.EndpointWriter] [flink-akka.actor.default-dispatcher-86]".dimmed(),
+        " Transient association error (association remains live)".normal(),
+        "\n\takka.remote.OversizedPayloadException\n\tDiscarding oversized payload sent to Actor[akka.tcp://flink@127.0.0.1:6122/user/rpc/taskmanager_0#196741921]: max allowed size 30000000 bytes, actual size of encoded class org.apache.flink.runtime.rpc.messages.RemoteRpcInvocation was 83938404 bytes.".normal(),
+      ]).red())
     );
   }
 
@@ -335,6 +361,26 @@ mod tests {
       },
       "threadId": 1,
       "threadPriority": 5
+    })
+  }
+
+  fn log4j_json_layout_java_line_with_thrown() -> Value {
+    json!({
+      "instant":{"epochSecond":1675413876,"nanoOfSecond":72210000},
+      "thread":"flink-akka.actor.default-dispatcher-86",
+      "level":"ERROR",
+      "loggerName":"akka.remote.EndpointWriter",
+      "message":"Transient association error (association remains live)",
+      "thrown":{
+        "commonElementCount":0,
+        "localizedMessage":"Discarding oversized payload sent to Actor[akka.tcp://flink@127.0.0.1:6122/user/rpc/taskmanager_0#196741921]: max allowed size 30000000 bytes, actual size of encoded class org.apache.flink.runtime.rpc.messages.RemoteRpcInvocation was 83938404 bytes.",
+        "message":"Discarding oversized payload sent to Actor[akka.tcp://flink@127.0.0.1:6122/user/rpc/taskmanager_0#196741921]: max allowed size 30000000 bytes, actual size of encoded class org.apache.flink.runtime.rpc.messages.RemoteRpcInvocation was 83938404 bytes.",
+        "name":"akka.remote.OversizedPayloadException"
+      },
+      "endOfBatch":false,
+      "loggerFqcn":"org.apache.logging.slf4j.Log4jLogger",
+      "threadId":1337,
+      "threadPriority":5
     })
   }
 }
