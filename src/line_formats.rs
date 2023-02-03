@@ -175,7 +175,7 @@ impl Log4JJsonLayoutLogLine {
       format!(
         "\n\t{}\n\t{}",
         self.thrown.name,
-        self.thrown.message.replace("\n", "\t\n")
+        self.thrown.message.replace('\n', "\n\t")
       )
     } else {
       "".to_string()

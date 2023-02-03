@@ -78,7 +78,7 @@ impl Filter {
       let caps = EQUALS_REGEX.captures(text).unwrap();
       Filter::equals(caps.get(1).unwrap().as_str(), caps.get(2).unwrap().as_str())
     } else {
-      println!("Can't parse filter: {}", text);
+      println!("Can't parse filter: {text}");
       panic!("Error.");
     }
   }
