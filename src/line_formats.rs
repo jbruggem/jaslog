@@ -183,16 +183,15 @@ impl Log4JJsonLayoutLogLine {
   }
 
   fn format_meta(&self) -> String {
-    let naive_datetime =
-      NaiveDateTime::from_timestamp(self.instant.epoch_second, self.instant.nano_of_second);
-    let datetime: DateTime<Utc> = DateTime::from_utc(naive_datetime, Utc);
+    let formatted_datetime =
+      NaiveDateTime::from_timestamp_opt(self.instant.epoch_second, self.instant.nano_of_second)
+        .map(|naive_datetime| DateTime::from_utc(naive_datetime, Utc))
+        .map(|datetime: DateTime<Utc>| datetime.format("%+").to_string())
+        .unwrap_or(self.instant.epoch_second.to_string());
 
     format!(
       "[{}] [{}] [{}] [{}]",
-      datetime.format("%+"),
-      self.level,
-      self.logger_name,
-      self.thread_name
+      formatted_datetime, self.level, self.logger_name, self.thread_name
     )
   }
 }
