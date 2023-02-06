@@ -331,22 +331,6 @@ mod tests {
     );
   }
 
-  #[test]
-  fn test_format_log4j_json_layout_java_line_with_thrown() {
-    println!(
-      "Actual: {}",
-      Formatter::new().format_message(log4j_json_layout_java_line_with_thrown())
-    );
-    assert_eq!(
-      Formatter::new().format_message(log4j_json_layout_java_line_with_thrown()),
-      render(join(vec![
-        "[2023-02-03T08:44:36.072210+00:00] [ERROR] [akka.remote.EndpointWriter] [flink-akka.actor.default-dispatcher-86]".dimmed(),
-        " Transient association error (association remains live)".normal(),
-        "\n\takka.remote.OversizedPayloadException\n\tDiscarding oversized payload sent to Actor[akka.tcp://flink@127.0.0.1:6122/user/rpc/taskmanager_0#196741921]: max allowed size 30000000 bytes, actual size of encoded class org.apache.flink.runtime.rpc.messages.RemoteRpcInvocation was 83938404 bytes.".normal(),
-      ]).red())
-    );
-  }
-
   fn log4j_json_layout_java_line() -> Value {
     json!({
       "thread": "main",
@@ -362,6 +346,22 @@ mod tests {
       "threadId": 1,
       "threadPriority": 5
     })
+  }
+
+  #[test]
+  fn test_format_log4j_json_layout_java_line_with_thrown() {
+    println!(
+      "Actual: {}",
+      Formatter::new().format_message(log4j_json_layout_java_line_with_thrown())
+    );
+    assert_eq!(
+      Formatter::new().format_message(log4j_json_layout_java_line_with_thrown()),
+      render(join(vec![
+        "[2023-02-03T08:44:36.072210+00:00] [ERROR] [akka.remote.EndpointWriter] [flink-akka.actor.default-dispatcher-86]".dimmed(),
+        " Transient association error (association remains live)".normal(),
+        "\n\takka.remote.OversizedPayloadException\n\tDiscarding oversized payload sent to Actor[akka.tcp://flink@127.0.0.1:6122/user/rpc/taskmanager_0#196741921]: max allowed size 30000000 bytes, actual size of encoded class org.apache.flink.runtime.rpc.messages.RemoteRpcInvocation was 83938404 bytes.".red(),
+      ]).red())
+    );
   }
 
   fn log4j_json_layout_java_line_with_thrown() -> Value {
@@ -382,5 +382,45 @@ mod tests {
       "threadId":1337,
       "threadPriority":5
     })
+  }
+
+  // Added because the date wasn't shown properly
+  #[test]
+  fn test_format_log4j_json_layout_java_line_complicated_timestamp() {
+    let expected = render(join(vec![
+      "[2023-02-06T08:18:01.452180+00:00] [INFO] [org.apache.kafka.clients.FetchSessionHandler] [Source Data Fetcher for Source: MySourceName -> *anonymous_datastream_source$4*[18] (2/2)#2798]".dimmed(),
+      " [Consumer clientId=name_72e14600-16b6-4c27-aff0-fae92ae52650-1, groupId=name_72e14600-16b6-4c27-aff0-fae92ae52650] Error sending fetch request (sessionId=1995808239, epoch=INITIAL) to node 0:".normal(),
+      " (org.apache.kafka.common.errors.DisconnectException)".red()
+    ]).white());
+
+    let actual =
+      Formatter::new().format_message(log4j_json_layout_java_line_complicated_timestamp());
+
+    println!("Actual:   {actual}");
+    println!("Expected: {expected}");
+    assert_eq!(actual, expected);
+  }
+
+  // Added because the date wasn't shown properly
+  fn log4j_json_layout_java_line_complicated_timestamp() -> Value {
+    json!({
+      "instant": {
+        "epochSecond": 1675671481,
+        "nanoOfSecond": 452180000
+      },
+      "thread": "Source Data Fetcher for Source: MySourceName -> *anonymous_datastream_source$4*[18] (2/2)#2798",
+      "level": "INFO",
+      "loggerName": "org.apache.kafka.clients.FetchSessionHandler",
+      "message": "[Consumer clientId=name_72e14600-16b6-4c27-aff0-fae92ae52650-1, groupId=name_72e14600-16b6-4c27-aff0-fae92ae52650] Error sending fetch request (sessionId=1995808239, epoch=INITIAL) to node 0:",
+      "thrown": {
+        "commonElementCount": 0,
+        "name": "org.apache.kafka.common.errors.DisconnectException"
+      },
+      "endOfBatch": false,
+      "loggerFqcn": "org.apache.kafka.common.utils.LogContext$LocationAwareKafkaLogger",
+      "threadId": 664,
+      "threadPriority": 5
+    }
+    )
   }
 }
