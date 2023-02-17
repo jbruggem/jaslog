@@ -37,9 +37,9 @@ fn main() {
 
   let lines = options.get_one::<u64>("number_of_lines");
 
-  let filters: Vec<&String> = options
+  let filters: Vec<&str> = options
     .get_many::<String>("filters")
-    .map(|filters| filters.clone().collect())
+    .map(|filters| filters.clone().map(|s| s.as_str()).collect())
     .unwrap_or(Vec::new());
 
   read_log(file_path, filters, lines);

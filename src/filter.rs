@@ -1,7 +1,7 @@
 use regex::Regex;
 use serde_json::Value;
 
-pub fn parse_filters(unparsed_filters: Vec<&String>) -> Vec<Filter> {
+pub fn parse_filters(unparsed_filters: Vec<&str>) -> Vec<Filter> {
   unparsed_filters.iter().copied().map(Filter::from).collect()
 }
 
@@ -61,7 +61,7 @@ impl Filter {
     }
   }
 
-  fn from(text: &String) -> Filter {
+  fn from(text: &str) -> Filter {
     lazy_static! {
       static ref CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\+(.+)$").unwrap();
       static ref NOT_CONTAINS_REGEX: Regex = Regex::new(r"^([^=]+)=\^(.+)$").unwrap();
