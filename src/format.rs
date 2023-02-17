@@ -124,10 +124,16 @@ fn colored_with_maybe_level(maybe_level: Option<&str>, text: &str) -> ColoredStr
 
 pub fn colored_with_level(level: &str, text: &str) -> ColoredString {
   match level.to_lowercase().as_str() {
-    "info" => text.white(),
-    "warn" => text.yellow(),
+    "emergency" => text.white().on_bright_red(),
+    "alert" => text.white().on_bright_red(),
+    "critical" => text.red(),
     "error" => text.red(),
+    "warn" => text.yellow(),
+    "warning" => text.yellow(),
+    "notice" => text.cyan(),
+    "info" => text.white(),
     "debug" => text.blue(),
+    "trace" => text.purple(),
     _ => text.white(),
   }
 }
