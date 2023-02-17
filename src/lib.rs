@@ -22,7 +22,7 @@ use format::*;
 
 pub fn read_log(
   maybe_file_path: Option<&String>,
-  unparsed_filters: Vec<&str>,
+  unparsed_filters: Vec<&String>,
   number_of_lines: Option<&u64>,
 ) {
   let stdin = io::stdin();
