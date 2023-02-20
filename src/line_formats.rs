@@ -94,6 +94,18 @@ pub struct LogstashJavaLogLine {
 
   #[serde(default)]
   stack_trace: String,
+  #[serde(default)]
+  exception: LogstashLogLineException,
+}
+
+#[derive(Serialize, Deserialize, Default, PartialEq, Debug)]
+struct LogstashLogLineException {
+  #[serde(default, alias = "exception_message")]
+  message: String,
+  #[serde(default, alias = "exception_class")]
+  class: String,
+  #[serde(default)]
+  stacktrace: String,
 }
 
 impl FormatLogLine for LogstashJavaLogLine {
@@ -130,11 +142,19 @@ impl LogstashJavaLogLine {
       self.format_mdc()
     )
   }
-  fn format_stacktrace(&self) -> String {
-    if !self.stack_trace.is_empty() {
-      format!("\n\t{}", self.stack_trace.replace('\n', "\n\t").red())
+  fn format_stacktrace(&self) -> ColoredString {
+    if !self.exception.message.is_empty() {
+      format!(
+        "\n\t{} ({})\n\t{}",
+        self.exception.message,
+        self.exception.class,
+        self.exception.stacktrace.replace('\n', "\n\t")
+      )
+      .red()
+    } else if !self.stack_trace.is_empty() {
+      format!("\n\t{}", self.stack_trace.replace('\n', "\n\t")).red()
     } else {
-      "".to_string()
+      "".normal()
     }
   }
 

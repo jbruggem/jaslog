@@ -126,6 +126,7 @@ pub fn colored_with_level(level: &str, text: &str) -> ColoredString {
   match level.to_lowercase().as_str() {
     "emergency" => text.white().on_bright_red(),
     "alert" => text.white().on_bright_red(),
+    "fatal" => text.white().on_bright_red(),
     "critical" => text.red(),
     "error" => text.red(),
     "warn" => text.yellow(),
