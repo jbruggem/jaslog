@@ -1,7 +1,8 @@
 # Jaslog
 
-![Rust](https://github.com/jbruggem/jaslog/workflows/Rust/badge.svg)
-[![Crates.io](https://img.shields.io/crates/v/jaslog.svg)](https://crates.io/crates/jaslog)
+![Crates.io](https://img.shields.io/crates/v/jaslog.svg)](https://crates.io/crates/jaslog)
+![Test status](https://github.com/jbruggem/jaslog/actions/workflows/test.yml/badge.svg)
+![Release status](https://github.com/jbruggem/jaslog/actions/workflows/release.yml/badge.svg)
 
 A log reader for structured logs that handles non-json lines, displays beautifully
 colored logs and can filter based on the fields of the json.
