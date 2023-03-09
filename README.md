@@ -1,6 +1,6 @@
 # Jaslog
 
-![Crates.io](https://img.shields.io/crates/v/jaslog.svg)](https://crates.io/crates/jaslog)
+[![Crates.io](https://img.shields.io/crates/v/jaslog.svg)](https://crates.io/crates/jaslog)
 ![Test status](https://github.com/jbruggem/jaslog/actions/workflows/test.yml/badge.svg)
 ![Release status](https://github.com/jbruggem/jaslog/actions/workflows/release.yml/badge.svg)
 
