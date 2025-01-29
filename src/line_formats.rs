@@ -74,6 +74,47 @@ impl ToColoredString for ElixirLogLine {
 }
 
 //////////////////////////////////
+/// ElixirExtendedLogLine
+//////////////////////////////////
+
+#[derive(Serialize, Deserialize)]
+pub struct ElixirExtendedLogLine {
+  application: String,
+  level: String,
+  message: String,
+  module: String,
+  pid: String,
+  timestamp: String,
+}
+
+impl FormatLogLine for ElixirExtendedLogLine {
+  fn format(&self) -> ColoredString {
+    colored_with_level(
+      &self.level,
+      &format!("{} {}", &self.format_meta().dimmed(), &self.message),
+    )
+  }
+}
+
+impl ElixirExtendedLogLine {
+  fn format_meta(&self) -> String {
+    format!(
+      "[{}] [{}] [{}] [{}] [{}]",
+      self.timestamp, self.level, self.application, self.module, self.pid
+    )
+  }
+}
+
+impl ToColoredString for ElixirExtendedLogLine {
+  fn to_colored_string(entry: &Value) -> Option<ColoredString> {
+    match ElixirExtendedLogLine::deserialize(entry) {
+      Err(_) => None,
+      Ok(line) => Some(line.format()),
+    }
+  }
+}
+
+//////////////////////////////////
 /// LogstashJavaLogLine
 //////////////////////////////////
 

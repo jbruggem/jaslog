@@ -4,8 +4,9 @@ use serde_json::Value;
 
 type LogLineToColoredString = fn(&Value) -> Option<ColoredString>;
 
-static SPECIFIC_LINE_CONVERTERS: [LogLineToColoredString; 3] = [
+static SPECIFIC_LINE_CONVERTERS: [LogLineToColoredString; 4] = [
   ElixirLogLine::to_colored_string,
+  ElixirExtendedLogLine::to_colored_string,
   LogstashJavaLogLine::to_colored_string,
   Log4JJsonLayoutLogLine::to_colored_string,
 ];
@@ -235,6 +236,47 @@ mod tests {
       "pid": "#PID<0.274.0>",
       "timestamp": "2019-12-18T10:55:50.000345"
     })
+  }
+
+  #[test]
+  fn test_format_elixir_extended_line() {
+    let expected = render(
+      join(vec![
+        "[2025-01-29T17:31:21.000546] [info] [:plug] [Elixir.Plug.Logger] [#PID<0.1332.0>]"
+          .dimmed(),
+        " Sent 304 in 24ms".normal(),
+      ])
+      .white(),
+    );
+    println!(
+      "Actual:   {}",
+      Formatter::new().format_message(elixir_extended_line())
+    );
+    println!("Expected: {}", expected);
+    assert_eq!(
+      Formatter::new().format_message(elixir_extended_line()),
+      expected
+    );
+  }
+
+  fn elixir_extended_line() -> Value {
+    json!({
+          "function": "call/2",
+          "message": "Sent 304 in 24ms",
+          "module": "Elixir.Plug.Logger",
+          "pid": "#PID<0.1332.0>",
+          "timestamp": "2025-01-29T17:31:21.000546",
+          "gl": "#PID<0.429.0>",
+          "domain": [":elixir"],
+          "level": "info",
+          "application": ":plug",
+          "metadata": {
+            "time": 1738168281546325i64,
+            "remote_ip": "127.0.0.1",
+            "request_id": "GB8218PtQA7_GpIAAAHH"
+          }
+        }
+    )
   }
 
   #[test]
