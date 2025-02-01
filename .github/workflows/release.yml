@@ -56,7 +56,7 @@ jobs:
       - uses: actions/download-artifact@v4
       - uses: ncipollo/release-action@v1
         with:
-          name: Release ${{ github.ref }}
-          tag: ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
           draft: false
           artifacts: "binary-*/jaslog_*,binary-*/jaslog.exe"
