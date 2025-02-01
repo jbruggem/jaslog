@@ -8,27 +8,7 @@ on:
     #   - v*
 
 jobs:
-  tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Cache tests
-        id: test-cache
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ matrix.os }}-test-cache
-
-      - name: Run tests
-        run: cargo test
-
   build:
-    needs: [tests]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -37,12 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Cache build
+      - name: Cache build and test
         id: build-cache
         uses: actions/cache@v4
         with:
           path: target
           key: ${{ matrix.os }}-build-cache
+
+      - name: Test
+        run: cargo test
 
       - name: Build
         run: cargo build --release
