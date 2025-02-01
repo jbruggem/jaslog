@@ -2,10 +2,8 @@ name: Build and Release
 
 on:
   push:
-    branches:
-      - "*"
-    # tags:
-    #   - v*
+    tags:
+      - v*
 
 jobs:
   build:
@@ -60,5 +58,5 @@ jobs:
         with:
           name: Release ${{ github.ref }}
           tag: ${{ github.ref }}
-          draft: true
+          draft: false
           artifacts: "binary-*/jaslog_*,binary-*/jaslog.exe"
