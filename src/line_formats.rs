@@ -309,8 +309,7 @@ impl Log4JJsonLayoutLogLine {
   }
 
   fn format_date(&self) -> String {
-    NaiveDateTime::from_timestamp_opt(self.instant.epoch_second, self.instant.nano_of_second)
-      .map(|naive_datetime| DateTime::from_utc(naive_datetime, Utc))
+    DateTime::from_timestamp(self.instant.epoch_second, self.instant.nano_of_second)
       .map(|datetime: DateTime<Utc>| datetime.format("%+").to_string())
       .unwrap_or(self.instant.epoch_second.to_string())
   }

@@ -12,25 +12,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Cache checks
-      id: build-and-test-cache
-      uses: actions/cache@v1
-      with:
-        path: target
-        key: ${{ matrix.os }}-build-and-test-cache
+      - name: Cache checks
+        id: build-and-test-cache
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ matrix.os }}-build-and-test-cache
 
-    - name: Run clippy
-      run: |
-        rustup component add clippy
-        cargo clippy -- -D warnings
+      - name: Run clippy
+        run: |
+          rustup component add clippy
+          cargo clippy -- -D warnings
 
-    - name: Check formatting
-      run: |
-        rustup component add rustfmt
-        cargo fmt --check
-
+      - name: Check formatting
+        run: |
+          rustup component add rustfmt
+          cargo fmt --check
 
   build:
     runs-on: ${{ matrix.os }}
@@ -39,38 +38,38 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Cache build and tests
-      id: build-and-test-cache
-      uses: actions/cache@v1
-      with:
-        path: target
-        key: ${{ matrix.os }}-build-and-test-cache
+      - name: Cache build and tests
+        id: build-and-test-cache
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ matrix.os }}-build-and-test-cache
 
-    - name: Run tests
-      run: cargo test
+      - name: Run tests
+        run: cargo test
 
-    - name: Build
-      run: cargo build --release
+      - name: Build
+        run: cargo build --release
 
-    - name: Persist binary Linux
-      if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v1
-      with:
-        name: jaslog_linux
-        path: target/release/jaslog
+      - name: Persist binary Linux
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jaslog_linux
+          path: target/release/jaslog
 
-    - name: Persist binary macOS
-      if: matrix.os == 'macOS-latest'
-      uses: actions/upload-artifact@v1
-      with:
-        name: jaslog_macos
-        path: target/release/jaslog
+      - name: Persist binary macOS
+        if: matrix.os == 'macOS-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jaslog_macos
+          path: target/release/jaslog
 
-    - name: Persist binary Windows
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v1
-      with:
-        name: jaslog_windows.exe
-        path: target/release/jaslog.exe
+      - name: Persist binary Windows
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jaslog_windows.exe
+          path: target/release/jaslog.exe

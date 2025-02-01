@@ -40,7 +40,7 @@ fn main() {
   let filters: Vec<&str> = options
     .get_many::<String>("filters")
     .map(|filters| filters.clone().map(|s| s.as_str()).collect())
-    .unwrap_or(Vec::new());
+    .unwrap_or_default();
 
   read_log(file_path, filters, lines);
 }
