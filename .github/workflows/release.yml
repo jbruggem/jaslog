@@ -2,8 +2,10 @@ name: Build and Release
 
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - "*"
+    # tags:
+    #   - v*
 
 jobs:
   tests:
@@ -25,39 +27,15 @@ jobs:
       - name: Run tests
         run: cargo test
 
-  create_release:
+  build:
     needs: [tests]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v1
-      - name: create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-      - name: Output Release URL File
-        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-      - name: Save Release URL File for publish
-        uses: actions/upload-artifact@v4
-        with:
-          name: release_url
-          path: release_url.txt
-
-  build_and_upload:
-    needs: [create_release]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache build
         id: build-cache
@@ -69,38 +47,35 @@ jobs:
       - name: Build
         run: cargo build --release
 
-      - name: Load Release URL File from release job
-        uses: actions/download-artifact@v4
-        with:
-          name: release_url
-
-      - name: Get Release File Name & Upload URL
-        id: get_release_info
-        shell: bash
-        run: |
-          value=`cat release_url/release_url.txt`
-          ls -lah .
-          echo $value
-          echo {upload_url}={$value} >> $GITHUB_OUTPUT
-
-      - name: Upload Release Asset
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: target/release/jaslog.exe
-          asset_name: jaslog_windows.exe
-          asset_content_type: application/octet-stream
-
-      - name: Upload Release Asset
+      - name: Rename Release assets
         if: matrix.os != 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mv target/release/jaslog target/release/jaslog_$(uname)
+          ls target/release/
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.os != 'windows-latest'
         with:
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: target/release/jaslog
-          asset_name: jaslog_${{ matrix.os }}
-          asset_content_type: application/octet-stream
+          name: binary-${{ matrix.os }}
+          path: target/release/jaslog_*
+
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'windows-latest'
+        with:
+          name: binary-${{ matrix.os }}
+          path: target/release/jaslog.exe
+
+  create_release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v4
+      - uses: ncipollo/release-action@v1
+        with:
+          name: Release ${{ github.ref }}
+          tag: ${{ github.ref }}
+          draft: true
+          artifacts: "binary-*/jaslog_*,binary-*/jaslog.exe"
